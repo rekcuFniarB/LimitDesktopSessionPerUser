@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=XSession
+Exec=limitsessionperuser
+TryExec=limitsessionperuser
+DesktopNames=LimitSessionPerUser
+Name=Limit Session Per User
