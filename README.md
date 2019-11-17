@@ -12,4 +12,8 @@ Installing
 
 Run `./install` script. Restart your display manager (e.g. `sudo systemctl restart sddm`) and select session **Limit Session Per User** on the login screen instead of default one.
 
+By default it will use **Plasma Desktop**. You can override it in `/etc/limitsessionperuser.conf`:
+
+    SESSION='/usr/share/xsessions/plasma.desktop'
+
 To uninstall run `./install --uninstall`.
