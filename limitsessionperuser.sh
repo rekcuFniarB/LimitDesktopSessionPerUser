@@ -35,7 +35,7 @@ fi
 errlog "Using config $CONF"
 
 ## List of other sessions of current user
-SESSIONS="$(loginctl list-sessions | grep seat | grep $USER)"
+SESSIONS="$(loginctl list-sessions | grep seat | grep -v tty | grep $USER)"
 
 ## Get ID of other existing session
 ID="$(echo -n "$SESSIONS" | awk '{print $1}' | grep -v "$XDG_SESSION_ID" | head -n 1)"
