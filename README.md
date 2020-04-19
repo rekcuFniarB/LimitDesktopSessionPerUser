@@ -3,7 +3,7 @@ Limit Deskop Sessions Per User
 
 This simple util allows only one Linux desktop session per user.
 
-When user attempts to start new desktop session instead of logging in already existing one, it will throw it back to the login screen.
+When user attempts to start new desktop session instead of logging in already existing one, it will throw it will activate existing session of this user.
 
 This is a workaround of [such issue](https://github.com/sddm/sddm/issues/447). There is a [suggested patch](https://github.com/sddm/sddm/pull/730) but it's not merged to the master yet.
 
