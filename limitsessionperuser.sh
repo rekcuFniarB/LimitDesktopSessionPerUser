@@ -37,29 +37,37 @@ errlog "Using config $CONF"
 ## List of other sessions of current user
 SESSIONS="$(loginctl list-sessions | grep seat | grep -v tty | grep $USER)"
 
+## Determine session file
+if [ -z "$SESSION" ] || [ ! -f "$SESSION" ]; then
+    SESSION="/usr/share/xsessions/$(ls '/usr/share/xsessions' | head -n 1)"
+fi
+
+EXEC='true'
+## Determine session start executable
+if [ -n "$SESSION" ]; then
+    EXEC="$(cat "$SESSION" | grep '^Exec=' | sed 's/Exec=//')"
+fi
+
 ## Get ID of other existing session
-ID="$(echo -n "$SESSIONS" | awk '{print $1}' | grep -v "$XDG_SESSION_ID" | head -n 1)"
+ID="$(echo -n "$SESSIONS" | awk '{print $1}' | grep -v "  $XDG_SESSION_ID  " | head -n 1)"
 
 if [ -n "$ID" ]; then
     ## If session exists switch to existing session.
     errlog "Found previously creted session $ID"
     errlog "Activating sesion ID $ID"
-    exec loginctl activate "$ID"
+    ## ACTION defined in config
+    if [ _"$ACTION" = _"KILL" ]; then
+        ## terminate old session and start new
+        loginctl terminate-session "$ID"
+        exec "$EXEC"
+    else
+        errlog "Starting new session $SESSION"
+        errlog "Executing $EXEC"
+        exec loginctl activate "$ID"
+    fi
 else
-    ## Determine session file
-    if [ -z "$SESSION" ] || [ ! -f "$SESSION" ]; then
-        SESSION="/usr/share/xsessions/$(ls '/usr/share/xsessions' | head -n 1)"
-    fi
-    
     errlog "Starting new session $SESSION"
-    
-    ## Determine session start executable
-    if [ -n "$SESSION" ]; then
-        EXEC="$(cat "$SESSION" | grep '^Exec=' | sed 's/Exec=//')"
-    fi
-    
     errlog "Executing $EXEC"
-    
     ## Start session
     exec "$EXEC"
 fi
