@@ -49,27 +49,47 @@ if [ -n "$SESSION" ]; then
 fi
 
 ## Get ID of other existing session
-ID="$(echo -n "$SESSIONS" | awk '{print $1}' | grep -v "  $XDG_SESSION_ID  " | head -n 1)"
+ID="$(echo -n "$SESSIONS" | awk '{print $1}' | grep -v "$XDG_SESSION_ID" | head -n 1)"
+
+if [ -n "$DEBUG" ]; then
+    errlog "DEBUG: current session: '$XDG_SESSION_ID'"
+    errlog "DEBUG: sessions: '$SESSIONS'"
+    errlog "DEBUG: user '$USER'"
+fi
 
 if [ -n "$ID" ]; then
-    ## If session exists switch to existing session.
-    errlog "Found previously creted session $ID"
-    errlog "Activating sesion ID $ID"
-    ## ACTION defined in config
+    # ACTION defined in config
     if [ _"$ACTION" = _"KILL" ]; then
-        ## terminate old session and start new
+        errlog "Terminating old session '$ID'"
+	## terminate old session and start new
         loginctl terminate-session "$ID"
-        exec "$EXEC"
+        ## Start session
+        if [ -z "$TERMINATESESSION" ]; then
+            exec "$EXEC"
+        else
+            "$EXEC"
+            sleep 1
+            errlog "Process '$EXEC' exited, terminating current session '$XDG_SESSION_ID'"
+            loginctl terminate-session "$XDG_SESSION_ID"
+        fi
     else
-        errlog "Starting new session $SESSION"
-        errlog "Executing $EXEC"
+        ## If session exists switch to existing session.
+        errlog "Found previously creted session '$ID'"
+        errlog "Activating sesion ID '$ID'"
         exec loginctl activate "$ID"
     fi
 else
-    errlog "Starting new session $SESSION"
-    errlog "Executing $EXEC"
+    errlog "Starting new session '$SESSION'"
+    errlog "Executing '$EXEC'"
     ## Start session
-    exec "$EXEC"
+    if [ -z "$TERMINATESESSION" ]; then
+        exec "$EXEC"
+    else
+        "$EXEC"
+        sleep 1
+        errlog "Process '$EXEC' exited, terminating current session '$XDG_SESSION_ID'"
+        loginctl terminate-session "$XDG_SESSION_ID"
+    fi
 fi
 
 exit $?
